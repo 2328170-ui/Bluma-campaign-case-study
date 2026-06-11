@@ -123,4 +123,4 @@ input is visible and editable in the interactive model.
 ## 👤 Author
 
 **Isha Gupta** — _GTM / Growth & SDR_
-[GitHub](https://github.com/2328170-ui) · _LinkedIn: add your profile link here_
+[GitHub](https://github.com/2328170-ui) · [LinkedIn](https://www.linkedin.com/in/isha-gupta-512a86349/)
