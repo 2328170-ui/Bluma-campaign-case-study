@@ -10,6 +10,7 @@ Desktop.ini
 # Logs / temp
 *.log
 *.tmp
+*.ps1
 verify.ps1
 
 # Node (not used now, but safe to ignore if added later)
