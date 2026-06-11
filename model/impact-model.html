@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>BLUMA — Green Infrastructure Impact Model</title>
+<style>
+  :root {
+    --green: #1f7a4d;
+    --green-light: #2e9b63;
+    --green-bg: #eef7f1;
+    --ink: #14231b;
+    --muted: #5b6b62;
+    --card: #ffffff;
+    --line: #d9e6dd;
+    --accent: #f3b61f;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    color: var(--ink);
+    background: linear-gradient(160deg, #f7fbf8 0%, #eef7f1 100%);
+    line-height: 1.5;
+  }
+  header {
+    background: var(--green);
+    color: #fff;
+    padding: 28px 32px;
+  }
+  header h1 { margin: 0 0 4px; font-size: 26px; letter-spacing: -0.5px; }
+  header p { margin: 0; opacity: 0.9; font-size: 15px; }
+  .wrap {
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 28px 24px 60px;
+    display: grid;
+    grid-template-columns: 360px 1fr;
+    gap: 28px;
+  }
+  @media (max-width: 900px) { .wrap { grid-template-columns: 1fr; } }
+  .panel {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 22px;
+    box-shadow: 0 2px 10px rgba(31,122,77,0.05);
+  }
+  .panel h2 {
+    margin: 0 0 16px; font-size: 16px; text-transform: uppercase;
+    letter-spacing: 1px; color: var(--green); border-bottom: 2px solid var(--green-bg);
+    padding-bottom: 8px;
+  }
+  .field { margin-bottom: 16px; }
+  .field label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 4px; }
+  .field .hint { font-size: 11px; color: var(--muted); margin-bottom: 6px; }
+  .field input[type=range] { width: 100%; accent-color: var(--green); }
+  .field .val { font-weight: 700; color: var(--green-light); float: right; }
+  .group-title { font-size:12px; font-weight:700; color:var(--muted); text-transform:uppercase;
+    letter-spacing:1px; margin:18px 0 8px; }
+
+  .headline { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 24px; }
+  @media (max-width: 700px){ .headline{ grid-template-columns:1fr; } }
+  .stat {
+    background: var(--green); color: #fff; border-radius: 14px; padding: 20px;
+    text-align: center;
+  }
+  .stat .num { font-size: 30px; font-weight: 800; letter-spacing: -1px; }
+  .stat .lbl { font-size: 12px; opacity: 0.9; text-transform: uppercase; letter-spacing: 1px; margin-top: 4px; }
+  .stat.alt { background: var(--green-light); }
+  .stat.gold { background: #b8860b; }
+
+  table { width: 100%; border-collapse: collapse; margin-top: 4px; }
+  th, td { text-align: left; padding: 9px 8px; font-size: 14px; border-bottom: 1px solid var(--line); }
+  th { color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: 1px; }
+  td.r, th.r { text-align: right; font-variant-numeric: tabular-nums; }
+  tr.total td { font-weight: 800; border-top: 2px solid var(--green); border-bottom: none; color: var(--green); }
+  .bar { height: 8px; background: var(--green-bg); border-radius: 4px; overflow: hidden; margin-top: 4px; }
+  .bar > span { display: block; height: 100%; background: var(--green-light); }
+  .note { font-size: 12px; color: var(--muted); margin-top: 16px; padding: 12px; background: var(--green-bg); border-radius: 8px; }
+  button.reset {
+    margin-top: 8px; background: var(--green-bg); color: var(--green); border: 1px solid var(--line);
+    padding: 8px 14px; border-radius: 8px; font-weight: 600; cursor: pointer; width: 100%;
+  }
+  button.reset:hover { background: #e0efe6; }
+  .calc { font-family: ui-monospace, "Cascadia Code", Consolas, monospace; font-size: 12px;
+    background: #14231b; color: #8ef0b8; padding: 12px 14px; border-radius: 8px; margin-top:14px;
+    white-space: pre-wrap; line-height:1.6; }
+</style>
+</head>
+<body>
+<header>
+  <h1>🌿 BLUMA — Green Infrastructure Impact Model</h1>
+  <p>Translating green m² into public value: €&nbsp;savings, toll relief, and CO₂ removed. All inputs are adjustable — defaults reproduce the headline case.</p>
+</header>
+
+<div class="wrap">
+  <!-- INPUTS -->
+  <div class="panel">
+    <h2>Assumptions</h2>
+
+    <div class="group-title">Deployment footprint</div>
+    <div class="field">
+      <label>Target cities <span class="val" id="v_cities">15</span></label>
+      <input type="range" id="cities" min="1" max="30" step="1" value="15" />
+    </div>
+    <div class="field">
+      <label>Green surface / city (m²) <span class="val" id="v_area">200,000</span></label>
+      <div class="hint">~1–3% of convertible roof &amp; wall area</div>
+      <input type="range" id="area" min="25000" max="400000" step="5000" value="200000" />
+    </div>
+
+    <div class="group-title">Government savings (€ / m² / yr)</div>
+    <div class="field">
+      <label>Stormwater management <span class="val" id="v_storm">€15.00</span></label>
+      <input type="range" id="storm" min="0" max="30" step="0.5" value="15" />
+    </div>
+    <div class="field">
+      <label>Energy / urban cooling <span class="val" id="v_energy">€10.00</span></label>
+      <input type="range" id="energy" min="0" max="25" step="0.5" value="10" />
+    </div>
+    <div class="field">
+      <label>Public health (air quality) <span class="val" id="v_health">€20.00</span></label>
+      <input type="range" id="health" min="0" max="40" step="0.5" value="20" />
+    </div>
+    <div class="field">
+      <label>Biodiversity / amenity <span class="val" id="v_amenity">€4.00</span></label>
+      <input type="range" id="amenity" min="0" max="15" step="0.5" value="4" />
+    </div>
+
+    <div class="group-title">Carbon</div>
+    <div class="field">
+      <label>CO₂ sequestered (kg / m² / yr) <span class="val" id="v_co2">6.0</span></label>
+      <input type="range" id="co2" min="0" max="15" step="0.5" value="6" />
+    </div>
+    <div class="field">
+      <label>Carbon price (€ / tonne) <span class="val" id="v_cprice">€98</span></label>
+      <input type="range" id="cprice" min="0" max="150" step="1" value="98" />
+    </div>
+
+    <div class="group-title">Toll / congestion relief</div>
+    <div class="field">
+      <label>Commuters paying tolls <span class="val" id="v_comm">1,400,000</span></label>
+      <input type="range" id="comm" min="0" max="3000000" step="50000" value="1400000" />
+    </div>
+    <div class="field">
+      <label>Avg annual toll spend (€) <span class="val" id="v_toll">€400</span></label>
+      <input type="range" id="toll" min="0" max="1000" step="10" value="400" />
+    </div>
+    <div class="field">
+      <label>Modal-shift reduction <span class="val" id="v_shift">10%</span></label>
+      <input type="range" id="shift" min="0" max="30" step="0.5" value="10" />
+    </div>
+
+    <button class="reset" onclick="resetAll()">↺ Reset to headline case</button>
+  </div>
+
+  <!-- OUTPUTS -->
+  <div>
+    <div class="headline">
+      <div class="stat"><div class="num" id="o_gov">€148.76M</div><div class="lbl">Govt savings / yr</div></div>
+      <div class="stat alt"><div class="num" id="o_toll">€56.0M</div><div class="lbl">Toll relief / yr</div></div>
+      <div class="stat gold"><div class="num" id="o_co2">18,000 t</div><div class="lbl">CO₂ removed / yr</div></div>
+    </div>
+
+    <div class="panel" style="margin-bottom:24px;">
+      <h2>Government savings breakdown</h2>
+      <table>
+        <thead><tr><th>Category</th><th class="r">€/m²/yr</th><th class="r">Annual value</th><th style="width:120px">Share</th></tr></thead>
+        <tbody id="tbody"></tbody>
+        <tfoot>
+          <tr class="total"><td>Total public savings</td><td class="r"></td><td class="r" id="t_total"></td><td></td></tr>
+        </tfoot>
+      </table>
+      <div class="calc" id="footprint"></div>
+    </div>
+
+    <div class="panel">
+      <h2>Toll / congestion relief</h2>
+      <div class="calc" id="tollcalc"></div>
+      <div class="note">
+        <strong>How to defend it:</strong> No single optimistic input carries the result.
+        Stormwater + health make up the bulk of savings and are the most robust figures in the
+        green-roof literature. Carbon is &lt;2% of the total, so even halving CO₂ assumptions
+        barely moves the headline. Try it with the sliders.
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  const defaults = {
+    cities:15, area:200000, storm:15, energy:10, health:20, amenity:4,
+    co2:6, cprice:98, comm:1400000, toll:400, shift:10
+  };
+  const ids = Object.keys(defaults);
+  const $ = id => document.getElementById(id);
+  const fmtM = n => '€' + (n/1e6).toFixed(2) + 'M';
+  const fmtN = n => n.toLocaleString('en-US');
+
+  function compute() {
+    const g = {};
+    ids.forEach(k => g[k] = parseFloat($(k).value));
+
+    // footprint
+    const totalArea = g.cities * g.area;
+
+    // value labels on sliders
+    $('v_cities').textContent = g.cities;
+    $('v_area').textContent = fmtN(g.area);
+    $('v_storm').textContent = '€' + g.storm.toFixed(2);
+    $('v_energy').textContent = '€' + g.energy.toFixed(2);
+    $('v_health').textContent = '€' + g.health.toFixed(2);
+    $('v_amenity').textContent = '€' + g.amenity.toFixed(2);
+    $('v_co2').textContent = g.co2.toFixed(1);
+    $('v_cprice').textContent = '€' + g.cprice;
+    $('v_comm').textContent = fmtN(g.comm);
+    $('v_toll').textContent = '€' + g.toll;
+    $('v_shift').textContent = g.shift + '%';
+
+    // savings categories
+    const storm = totalArea * g.storm;
+    const energy = totalArea * g.energy;
+    const health = totalArea * g.health;
+    const amenity = totalArea * g.amenity;
+    const co2tonnes = totalArea * g.co2 / 1000;
+    const carbon = co2tonnes * g.cprice;
+    const total = storm + energy + health + amenity + carbon;
+
+    const rows = [
+      ['Stormwater management', g.storm, storm],
+      ['Energy / urban cooling', g.energy, energy],
+      ['Public health (air quality)', g.health, health],
+      ['Biodiversity / amenity', g.amenity, amenity],
+      ['Carbon value', carbon/totalArea || 0, carbon],
+    ];
+    $('tbody').innerHTML = rows.map(([name, per, val]) => {
+      const share = total ? (val/total*100) : 0;
+      return `<tr><td>${name}</td><td class="r">€${per.toFixed(2)}</td>
+        <td class="r">${fmtM(val)}</td>
+        <td><div class="bar"><span style="width:${share.toFixed(1)}%"></span></div></td></tr>`;
+    }).join('');
+    $('t_total').textContent = fmtM(total);
+
+    // toll relief
+    const tollRelief = g.comm * g.toll * (g.shift/100);
+
+    // headline stats
+    $('o_gov').textContent = fmtM(total);
+    $('o_toll').textContent = fmtM(tollRelief);
+    $('o_co2').textContent = fmtN(Math.round(co2tonnes)) + ' t';
+
+    // calc strips
+    $('footprint').textContent =
+      `Total green surface = ${g.cities} cities x ${fmtN(g.area)} m2 = ${fmtN(totalArea)} m2\n` +
+      `CO2 = ${fmtN(totalArea)} m2 x ${g.co2} kg = ${fmtN(Math.round(co2tonnes))} t  ->  x EUR${g.cprice}/t = ${fmtM(carbon)}`;
+    $('tollcalc').textContent =
+      `Toll relief = ${fmtN(g.comm)} commuters x EUR${g.toll}/yr x ${g.shift}% modal shift\n` +
+      `            = ${fmtM(tollRelief)} / yr returned to commuters`;
+  }
+
+  function resetAll(){ ids.forEach(k => $(k).value = defaults[k]); compute(); }
+
+  ids.forEach(k => $(k).addEventListener('input', compute));
+  compute();
+</script>
+</body>
+</html>

@@ -1,0 +1,16 @@
+# OS / editor
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+.DS_Store
+*.swp
+.vscode/
+.idea/
+
+# Logs / temp
+*.log
+*.tmp
+verify.ps1
+
+# Node (not used now, but safe to ignore if added later)
+node_modules/
